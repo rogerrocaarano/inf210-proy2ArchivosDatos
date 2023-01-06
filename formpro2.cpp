@@ -179,8 +179,8 @@ void __fastcall TForm1::Button_navIdxClick(TObject *Sender) {
                           + IntToStr(reg_data.fecha.mes) + "/" + IntToStr(reg_data.fecha.año);
     }
 }
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 void __fastcall TForm1::Button_NavIdx_finClick(TObject *Sender) {
     pf->close();
     pIdx->close();
@@ -196,8 +196,8 @@ void __fastcall TForm1::Button_NavIdx_finClick(TObject *Sender) {
     Button_NavNombre_sig->Enabled = false;
     Button_NavNombre->Enabled = true;
 }
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 void __fastcall TForm1::Button_NavIdx_sigClick(TObject *Sender) {
     // Declarar dos variables de tipo registro
     RegIdxCod reg_idx; // Para el índice
@@ -229,8 +229,8 @@ void __fastcall TForm1::Button_NavIdx_sigClick(TObject *Sender) {
     MaskEdit1->Text = IntToStr(reg_data.fecha.dia) + "/"
                       + IntToStr(reg_data.fecha.mes) + "/" + IntToStr(reg_data.fecha.año);
 }
-//---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
 void __fastcall TForm1::Button_NavIdx_antClick(TObject *Sender) {
     // Declarar dos variables de tipo registro
     RegIdxCod reg_idx; // Para el índice
@@ -278,20 +278,22 @@ void __fastcall TForm1::porcodigo2Click(TObject *Sender) {
     // Algoritmo InsertionSort para archivos
     // El algoritmo compara el código del reg_i y reg_j
     // y ordena de menor a mayor.
-    for (int i = 2; i <= n; i++) {
+    for (int i = 1; i < n; i++) {
         idx.seekg(i * sizeof(RegIdxCod), ios::beg);
         idx.read((char *) &reg_i, sizeof(RegIdxCod));
         int j = i - 1;
         idx.seekg(j * sizeof(RegIdxCod), ios::beg);
         idx.read((char *) &reg_j, sizeof(RegIdxCod));
-
         // Ordenar los registros anteriores a reg_i del archivo:
-        while (j > 0 && reg_j.cod > reg_i.cod) {
+        while (j >= 0 && reg_j.cod > reg_i.cod) {
             idx.seekp((j + 1) * sizeof(RegIdxCod), ios::beg);
             idx.write((char *) &reg_j, sizeof(RegIdxCod));
             j--;
-            idx.seekg(j * sizeof(RegIdxCod), ios::beg);
-            idx.read((char *) &reg_j, sizeof(RegIdxCod));
+            if (j >= 0) {
+                idx.seekg(j * sizeof(RegIdxCod), ios::beg);
+                idx.read((char *) &reg_j, sizeof(RegIdxCod));
+            }
+
         }
         idx.seekp((j + 1) * sizeof(RegIdxCod), ios::beg);
         idx.write((char *) &reg_i, sizeof(RegIdxCod));
@@ -465,7 +467,37 @@ void __fastcall TForm1::Button_NavNombre_sigClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 
 void __fastcall TForm1::pornombre2Click(TObject *Sender) {
-//codigo
+    // Obtener el número de elementos en el archivo índice:
+    fstream idx(nomIdxNom.c_str(), ios::in | ios::out | ios::binary);
+    if (idx.fail()) {
+        return;
+    }
+    int n = sizeof(idx) / sizeof(RegIdxNom);
+    RegIdxNom reg_i, reg_j; // Variables de registro.
+
+    // Algoritmo InsertionSort para archivos
+    // El algoritmo compara el nombre del reg_i y reg_j
+    // y ordena de menor a mayor.
+    for (int i = 1; i < n; i++) {
+        idx.seekg(i * sizeof(RegIdxNom), ios::beg);
+        idx.read((char *) &reg_i, sizeof(RegIdxNom));
+        int j = i - 1;
+        idx.seekg(j * sizeof(RegIdxNom), ios::beg);
+        idx.read((char *) &reg_j, sizeof(RegIdxNom));
+        // Ordenar los registros anteriores a reg_i del archivo:
+        while (j >= 0 && reg_j.nom[0] > reg_i.nom[0]) {
+            idx.seekp((j + 1) * sizeof(RegIdxNom), ios::beg);
+            idx.write((char *) &reg_j, sizeof(RegIdxNom));
+            j--;
+            if (j >= 0) {
+                idx.seekg(j * sizeof(RegIdxNom), ios::beg);
+                idx.read((char *) &reg_j, sizeof(RegIdxNom));
+            }
+        }
+        idx.seekp((j + 1) * sizeof(RegIdxNom), ios::beg);
+        idx.write((char *) &reg_i, sizeof(RegIdxNom));
+    }
+    idx.close();
 }
 //---------------------------------------------------------------------------
 
